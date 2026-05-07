@@ -443,11 +443,11 @@ EFINE_DEF int in_place_loops_before_modifications_elide(char *first, char *data_
 				*curr = '\0';
 				any = 1;
 			}
-		} else if (*curr == '.' || *curr == ',' || *curr == '+' || *curr == '-') {
+		} else if (*curr == ',' || *curr == '+' || *curr == '-') {
 			if (bracket_level == 0) {
 				break;
 			}
-		} else if (*curr != '<' && *curr != '>' && *curr != '\0') {
+		} else if (*curr != '.' && *curr != '<' && *curr != '>' && *curr != '\0') {
 			EFINE_ASSUME(0 == 1);
 		}
 	}
