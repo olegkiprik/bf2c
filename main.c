@@ -15,15 +15,15 @@
 #define EFINE_NDEBUG (0 == 1)
 #endif
 
-#define EFINE_ASSUME(x)                                                                                                \
-	do {                                                                                                           \
-		if (EFINE_NDEBUG) {                                                                                    \
-			if (!(x)) {                                                                                    \
-				__builtin_unreachable();                                                               \
-			}                                                                                              \
-		} else {                                                                                               \
-			assert(x);                                                                                     \
-		}                                                                                                      \
+#define EFINE_ASSUME(x)                                                                            \
+	do {                                                                                       \
+		if (EFINE_NDEBUG) {                                                                \
+			if (!(x)) {                                                                \
+				__builtin_unreachable();                                           \
+			}                                                                          \
+		} else {                                                                           \
+			assert(x);                                                                 \
+		}                                                                                  \
 	} while (0 == 1)
 
 #define MEMORY_CHUNK_NR_BYTES 0x1000
@@ -35,8 +35,9 @@ EFINE_DEF int bf2c_generate(char *p, ptrdiff_t n)
 {
 	int result;
 
-	if (EOF == fputs(STRING_BEGIN, stdout))
+	if (EOF == fputs(STRING_BEGIN, stdout)) {
 		goto l_failed_output;
+	}
 
 	for (; n != 0; --n, ++p) {
 		switch (*p) {
@@ -69,15 +70,18 @@ EFINE_DEF int bf2c_generate(char *p, ptrdiff_t n)
 			break;
 		}
 
-		if (result == EOF)
+		if (result == EOF) {
 			goto l_failed_output;
+		}
 	}
 
-	if (EOF == fputs(STRING_END, stdout))
+	if (EOF == fputs(STRING_END, stdout)) {
 		goto l_failed_output;
+	}
 
-	if (EOF == fflush(stdout))
+	if (EOF == fflush(stdout)) {
 		goto l_failed_flush;
+	}
 
 	return EXIT_SUCCESS;
 l_failed_output:
@@ -89,8 +93,8 @@ l_failed_flush:
 }
 
 EFINE_DEF int memory_double(void **restrict out_new_ptr, void **restrict out_new_curr,
-			    void **restrict out_new_first_outside, void *old_ptr, void *old_curr, ptrdiff_t old_size,
-			    int zero_new)
+			    void **restrict out_new_first_outside, void *old_ptr, void *old_curr,
+			    ptrdiff_t old_size, int zero_new)
 {
 	void *tmp_ptr;
 	ptrdiff_t curr_diff;
@@ -98,11 +102,13 @@ EFINE_DEF int memory_double(void **restrict out_new_ptr, void **restrict out_new
 	curr_diff = (char *)old_curr - (char *)old_ptr;
 
 	tmp_ptr = realloc(old_ptr, old_size * 2);
-	if (tmp_ptr == NULL)
+	if (tmp_ptr == NULL) {
 		return 1;
+	}
 
-	if (zero_new == 1)
+	if (zero_new == 1) {
 		memset((char *)tmp_ptr + old_size, '\0', old_size);
+	}
 
 	*out_new_ptr = tmp_ptr;
 	*out_new_curr = (char *)tmp_ptr + curr_diff;
@@ -151,11 +157,13 @@ EFINE_DEF int in_place_byte_arith_redundancy_elide(char *first, char *data_first
 					byte_arithmetic_sum = 0x100 - byte_arithmetic_sum;
 					minus = 1;
 				}
-				for (p = curr - byte_arithmetic_sum; p != curr; ++p)
+				for (p = curr - byte_arithmetic_sum; p != curr; ++p) {
 					*p = minus == 1 ? '-' : '+';
+				}
 
-				if (plus_occurred == 1 && minus_occurred == 1)
+				if (plus_occurred == 1 && minus_occurred == 1) {
 					any = 1;
+				}
 
 				plus_occurred = 0;
 				minus_occurred = 0;
@@ -167,19 +175,21 @@ EFINE_DEF int in_place_byte_arith_redundancy_elide(char *first, char *data_first
 			state = 1;
 			*curr = '\0';
 			plus_occurred = 1;
-			if (byte_arithmetic_sum == 0xFF)
+			if (byte_arithmetic_sum == 0xFF) {
 				byte_arithmetic_sum = 0;
-			else
+			} else {
 				++byte_arithmetic_sum;
+			}
 			break;
 		case '-':
 			state = 1;
 			*curr = '\0';
 			minus_occurred = 1;
-			if (byte_arithmetic_sum == 0)
+			if (byte_arithmetic_sum == 0) {
 				byte_arithmetic_sum = 0xff;
-			else
+			} else {
 				--byte_arithmetic_sum;
+			}
 			break;
 		case '\0':
 			break;
@@ -195,11 +205,13 @@ EFINE_DEF int in_place_byte_arith_redundancy_elide(char *first, char *data_first
 			byte_arithmetic_sum = 0x100 - byte_arithmetic_sum;
 			minus = 1;
 		}
-		for (p = curr - byte_arithmetic_sum; p != curr; ++p)
+		for (p = curr - byte_arithmetic_sum; p != curr; ++p) {
 			*p = minus == 1 ? '-' : '+';
+		}
 
-		if (plus_occurred == 1 && minus_occurred == 1)
+		if (plus_occurred == 1 && minus_occurred == 1) {
 			any = 1;
+		}
 	}
 
 	return any;
@@ -242,13 +254,16 @@ EFINE_DEF int in_place_ptr_arith_redundancy_elide(char *first, char *data_first_
 		case '-':
 			if (state == 1) {
 				minus = ptr_arithmetic_sum < 0 ? 1 : 0;
-				if (minus == 1)
+				if (minus == 1) {
 					ptr_arithmetic_sum = -ptr_arithmetic_sum;
-				for (p = curr - ptr_arithmetic_sum; p != curr; ++p)
+				}
+				for (p = curr - ptr_arithmetic_sum; p != curr; ++p) {
 					*p = minus == 1 ? '<' : '>';
+				}
 
-				if (plus_occurred == 1 && minus_occurred == 1)
+				if (plus_occurred == 1 && minus_occurred == 1) {
 					any = 1;
+				}
 
 				plus_occurred = 0;
 				minus_occurred = 0;
@@ -278,13 +293,16 @@ EFINE_DEF int in_place_ptr_arith_redundancy_elide(char *first, char *data_first_
 
 	if (state == 1) {
 		minus = ptr_arithmetic_sum < 0 ? 1 : 0;
-		if (minus == 1)
+		if (minus == 1) {
 			ptr_arithmetic_sum = -ptr_arithmetic_sum;
-		for (p = curr - ptr_arithmetic_sum; p != curr; ++p)
+		}
+		for (p = curr - ptr_arithmetic_sum; p != curr; ++p) {
 			*p = minus == 1 ? '<' : '>';
+		}
 
-		if (plus_occurred == 1 && minus_occurred == 1)
+		if (plus_occurred == 1 && minus_occurred == 1) {
 			any = 1;
+		}
 	}
 
 	return any;
@@ -315,23 +333,27 @@ EFINE_DEF int in_place_byte_arith_before_input_elide(char *first, char *data_fir
 			while (tmp_dist != 0) {
 				--p;
 
-				if (*p == ']')
+				if (*p == ']') {
 					++bracket_level;
-				else if (*p == '[')
+				} else if (*p == '[') {
 					--bracket_level;
+				}
 
-				if (bracket_level == -1)
+				if (bracket_level == -1) {
 					break;
+				}
 
-				if (bracket_level == 0)
+				if (bracket_level == 0) {
 					from = p;
+				}
 
 				--tmp_dist;
 			}
 			for (p = from; p != curr; ++p) {
 				assert(*p != '.' && *p != ',' && *p != '<' && *p != '>');
-				if (*p == '+' || *p == '-' || *p == '[' || *p == ']')
+				if (*p == '+' || *p == '-' || *p == '[' || *p == ']') {
 					any = 1;
+				}
 				*p = '\0';
 			}
 
@@ -363,24 +385,28 @@ EFINE_DEF int in_place_after_io_elide(char *first, char *data_first_outside)
 	while (p != first) {
 		--p;
 
-		if (*p == ']')
+		if (*p == ']') {
 			++bracket_level;
-		else if (*p == '[')
+		} else if (*p == '[') {
 			--bracket_level;
-		else if (*p == '.' || *p == ',')
+		} else if (*p == '.' || *p == ',') {
 			break;
+		}
 
-		if (bracket_level == 0)
+		if (bracket_level == 0) {
 			from = p;
+		}
 	}
 
-	if (p == first && *p != '.' && *p != ',')
+	if (p == first && *p != '.' && *p != ',') {
 		from = first;
+	}
 
 	for (p = from; p != data_first_outside; ++p) {
 		assert(*p != '.' && *p != ',');
-		if (*p == '+' || *p == '-' || *p == '[' || *p == ']' || *p == '<' || *p == '>')
+		if (*p == '+' || *p == '-' || *p == '[' || *p == ']' || *p == '<' || *p == '>') {
 			any = 1;
+		}
 		*p = '\0';
 	}
 
@@ -404,20 +430,23 @@ EFINE_DEF int in_place_loops_before_modifications_elide(char *first, char *data_
 
 	for (curr = first; curr != data_first_outside; ++curr) {
 		if (*curr == '[') {
-			if (bracket_level == 0)
+			if (bracket_level == 0) {
 				from = curr;
+			}
 			++bracket_level;
 		} else if (*curr == ']') {
 			--bracket_level;
 			if (bracket_level == 0) {
-				for (p = from; p != curr; ++p)
+				for (p = from; p != curr; ++p) {
 					*p = '\0';
+				}
 				*curr = '\0';
 				any = 1;
 			}
 		} else if (*curr == '.' || *curr == ',' || *curr == '+' || *curr == '-') {
-			if (bracket_level == 0)
+			if (bracket_level == 0) {
 				break;
+			}
 		} else if (*curr != '<' && *curr != '>' && *curr != '\0') {
 			EFINE_ASSUME(0 == 1);
 		}
@@ -454,8 +483,9 @@ EFINE_DEF int in_place_loops_after_zero_elide(char *first, char *data_first_outs
 						bracket_level = 0;
 					}
 				} else {
-					if (bracket_level == 0)
+					if (bracket_level == 0) {
 						elide = 0;
+					}
 				}
 			}
 
@@ -464,8 +494,9 @@ EFINE_DEF int in_place_loops_after_zero_elide(char *first, char *data_first_outs
 				any = 1;
 			}
 
-			if (*curr == ']')
+			if (*curr == ']') {
 				elide = 1;
+			}
 		}
 	}
 
@@ -490,8 +521,9 @@ EFINE_DEF int in_place_simplify_zeroing_loops(int *out_any, char *first, char *d
 
 	any = 0;
 	bracket_stack = malloc(MEMORY_CHUNK_NR_BYTES);
-	if (bracket_stack == NULL)
+	if (bracket_stack == NULL) {
 		return 1;
+	}
 
 	bracket_stack_buff_first_outside = (char *)bracket_stack + MEMORY_CHUNK_NR_BYTES;
 	bracket_stack_head = bracket_stack;
@@ -502,30 +534,36 @@ EFINE_DEF int in_place_simplify_zeroing_loops(int *out_any, char *first, char *d
 		case '.':
 		case '>':
 		case '<':
-			for (tmp_sp = bracket_stack; tmp_sp != bracket_stack_head; ++tmp_sp)
+			for (tmp_sp = bracket_stack; tmp_sp != bracket_stack_head; ++tmp_sp) {
 				*tmp_sp = NULL;
+			}
 			break;
 		case '[':
 			*(char **)bracket_stack_head = curr;
 			bracket_stack_head = (char **)bracket_stack_head + 1;
-			if (bracket_stack_head == bracket_stack_buff_first_outside)
-				if (0 != memory_double(
-					     &bracket_stack, &bracket_stack_head, &bracket_stack_buff_first_outside,
-					     bracket_stack, bracket_stack_head,
-					     (char *)bracket_stack_buff_first_outside - (char *)bracket_stack, 0)) {
+			if (bracket_stack_head == bracket_stack_buff_first_outside) {
+				if (0 != memory_double(&bracket_stack, &bracket_stack_head,
+						       &bracket_stack_buff_first_outside,
+						       bracket_stack, bracket_stack_head,
+						       (char *)bracket_stack_buff_first_outside -
+							   (char *)bracket_stack,
+						       0)) {
 					free(bracket_stack);
 					return 1;
 				}
+			}
 			break;
 		case ']':
 			assert(bracket_stack_head != bracket_stack);
 			tmp_sp = (char **)bracket_stack_head - 1;
 			if (*tmp_sp != NULL) {
-				if (*tmp_sp + 2 != curr || *(*tmp_sp + 1) != '-')
+				if (*tmp_sp + 2 != curr || *(*tmp_sp + 1) != '-') {
 					any = 1;
+				}
 
-				for (p = *tmp_sp + 1; p != curr; ++p)
+				for (p = *tmp_sp + 1; p != curr; ++p) {
 					*p = '\0';
+				}
 				assert(*tmp_sp + 1 != curr);
 				*(*tmp_sp + 1) = '-';
 			}
@@ -559,10 +597,12 @@ EFINE_DEF int check_infinite_loops(char *first, char *data_first_outside)
 	tmp = '\0';
 
 	for (curr = first; curr != data_first_outside; ++curr) {
-		if (tmp == '[' && *curr == ']')
+		if (tmp == '[' && *curr == ']') {
 			return 1;
-		if (*curr != '\0')
+		}
+		if (*curr != '\0') {
 			tmp = *curr;
+		}
 	}
 
 	return 0;
@@ -576,12 +616,13 @@ EFINE_DEF int check_brackets_ok(char *first, char *data_first_outside)
 	bracket_level = 0;
 
 	for (curr = first; curr != data_first_outside; ++curr) {
-		if (*curr == '[')
+		if (*curr == '[') {
 			++bracket_level;
-		else if (*curr == ']') {
+		} else if (*curr == ']') {
 			--bracket_level;
-			if (bracket_level == -1)
+			if (bracket_level == -1) {
 				return 0;
+			}
 		}
 	}
 
@@ -604,8 +645,9 @@ EFINE_DEF int in_place_bracket_redundancy_elide(int *out_any, char *first, char 
 
 	any = 0;
 	bracket_stack = malloc(MEMORY_CHUNK_NR_BYTES);
-	if (bracket_stack == NULL)
+	if (bracket_stack == NULL) {
 		return 1;
+	}
 
 	bracket_stack_buff_first_outside = (char *)bracket_stack + MEMORY_CHUNK_NR_BYTES;
 	bracket_stack_head = bracket_stack;
@@ -618,8 +660,9 @@ EFINE_DEF int in_place_bracket_redundancy_elide(int *out_any, char *first, char 
 		case '-':
 		case '>':
 		case '<':
-			if (bracket_stack_head == bracket_stack)
+			if (bracket_stack_head == bracket_stack) {
 				break;
+			}
 
 			tmp_sp = (char **)bracket_stack_head - 1;
 			*tmp_sp = NULL;
@@ -628,10 +671,12 @@ EFINE_DEF int in_place_bracket_redundancy_elide(int *out_any, char *first, char 
 			*(char **)bracket_stack_head = curr;
 			bracket_stack_head = (char **)bracket_stack_head + 1;
 			if (bracket_stack_head == bracket_stack_buff_first_outside) {
-				if (0 != memory_double(
-					     &bracket_stack, &bracket_stack_head, &bracket_stack_buff_first_outside,
-					     bracket_stack, bracket_stack_head,
-					     (char *)bracket_stack_buff_first_outside - (char *)bracket_stack, 0)) {
+				if (0 != memory_double(&bracket_stack, &bracket_stack_head,
+						       &bracket_stack_buff_first_outside,
+						       bracket_stack, bracket_stack_head,
+						       (char *)bracket_stack_buff_first_outside -
+							   (char *)bracket_stack,
+						       0)) {
 					free(bracket_stack);
 					return 1;
 				}
@@ -695,9 +740,11 @@ EFINE_DEF int in_place_round_trip_elide(char *first, char *data_first_outside)
 				magnitude = 0;
 			}
 
-			if (*curr == '<' || *curr == '>')
-				if (from == NULL)
+			if (*curr == '<' || *curr == '>') {
+				if (from == NULL) {
 					from = curr;
+				}
+			}
 
 			break;
 		case 1:
@@ -739,8 +786,9 @@ EFINE_DEF int in_place_round_trip_elide(char *first, char *data_first_outside)
 			break;
 		}
 
-		if (state == 0 && magnitude == 0)
+		if (state == 0 && magnitude == 0) {
 			from = NULL;
+		}
 
 		continue;
 	l_check_magnitude:
@@ -750,8 +798,9 @@ EFINE_DEF int in_place_round_trip_elide(char *first, char *data_first_outside)
 				++tmp_magn;
 			} else if (state == 1 && *curr == ']') {
 				while (magnitude != tmp_magn) {
-					if (*from == '>')
+					if (*from == '>') {
 						--magnitude;
+					}
 					++from;
 				}
 				--curr;
@@ -767,8 +816,9 @@ EFINE_DEF int in_place_round_trip_elide(char *first, char *data_first_outside)
 				--tmp_magn;
 			} else if (state == 1 && *curr == ']') {
 				while (magnitude != tmp_magn) {
-					if (*from == '<')
+					if (*from == '<') {
 						++magnitude;
+					}
 					++from;
 				}
 				--curr;
@@ -781,12 +831,13 @@ EFINE_DEF int in_place_round_trip_elide(char *first, char *data_first_outside)
 			}
 		}
 		if (state == 1 && tmp_magn == magnitude || state != 1 && tmp_magn == -magnitude) {
-			if (state == 1)
+			if (state == 1) {
 				state = 2;
-			else if (state == 3)
+			} else if (state == 3) {
 				state = 4;
-			else if (state == 5)
+			} else if (state == 5) {
 				state = 6;
+			}
 		}
 	}
 
@@ -796,9 +847,10 @@ EFINE_DEF int in_place_round_trip_elide(char *first, char *data_first_outside)
 EFINE_DEF void in_place_ignored_to_null(char *p, char *data_first_outside)
 {
 	for (; p != data_first_outside; ++p) {
-		if (*p != ',' && *p != '.' && *p != '[' && *p != ']' && *p != '+' && *p != '-' && *p != '<' &&
-		    *p != '>')
+		if (*p != ',' && *p != '.' && *p != '[' && *p != ']' && *p != '+' && *p != '-' &&
+		    *p != '<' && *p != '>') {
 			*p = '\0';
+		}
 	}
 }
 
@@ -813,11 +865,12 @@ EFINE_DEF char *in_place_fit_code(char *first, char *data_first_outside)
 	char *in;
 
 	in = first;
-	for (out = first; out != data_first_outside; ++out)
+	for (out = first; out != data_first_outside; ++out) {
 		if (*out != '\0') {
 			*in = *out;
 			++in;
 		}
+	}
 
 	return in;
 }
@@ -837,8 +890,9 @@ int main(void)
 	int any;
 
 	memory_handle = malloc(MEMORY_CHUNK_NR_BYTES);
-	if (memory_handle == NULL)
+	if (memory_handle == NULL) {
 		return EXIT_FAILURE;
+	}
 
 	p = memory_handle;
 	buffer_first_outside = (char *)memory_handle + MEMORY_CHUNK_NR_BYTES;
@@ -847,20 +901,24 @@ int main(void)
 
 	/* read the whole file */
 
-	while (MEMORY_CHUNK_NR_BYTES == (bytes_read = fread_unlocked(p, 1, MEMORY_CHUNK_NR_BYTES, stdin))) {
+	while (MEMORY_CHUNK_NR_BYTES ==
+	       (bytes_read = fread_unlocked(p, 1, MEMORY_CHUNK_NR_BYTES, stdin))) {
 		p = (char *)p + MEMORY_CHUNK_NR_BYTES;
 
 		if (p == buffer_first_outside) {
-			if (0 != memory_double(&memory_handle, &p, &buffer_first_outside, memory_handle, p,
-					       (char *)buffer_first_outside - (char *)memory_handle, 0))
+			if (0 != memory_double(
+				     &memory_handle, &p, &buffer_first_outside, memory_handle, p,
+				     (char *)buffer_first_outside - (char *)memory_handle, 0)) {
 				goto l_failed_memory_when_reading;
+			}
 		}
 	}
 
 	funlockfile(stdin);
 
-	if (0 != ferror(stdin))
+	if (0 != ferror(stdin)) {
 		goto l_failed_read;
+	}
 
 	p = (char *)p + bytes_read;
 
@@ -874,33 +932,38 @@ int main(void)
 	while (1 == 1) {
 		any_elis_ptr = in_place_ptr_arith_redundancy_elide(memory, data_first_outside);
 		any_elis_byte = in_place_byte_arith_redundancy_elide(memory, data_first_outside);
-		if (any_elis_ptr == 0 && any_elis_byte == 0)
+		if (any_elis_ptr == 0 && any_elis_byte == 0) {
 			break;
+		}
 	}
 
 	(void)in_place_byte_arith_before_input_elide(memory, data_first_outside);
 	(void)in_place_loops_after_zero_elide(memory, data_first_outside);
 	(void)in_place_after_io_elide(memory, data_first_outside);
 
-	if (1 != check_brackets_ok(memory, data_first_outside))
+	if (1 != check_brackets_ok(memory, data_first_outside)) {
 		goto l_wrong_input;
+	}
 
-	if (0 != in_place_bracket_redundancy_elide(&any, memory, data_first_outside))
+	if (0 != in_place_bracket_redundancy_elide(&any, memory, data_first_outside)) {
 		goto l_failed_memory;
+	}
 
 	assert(1 == check_brackets_ok(memory, data_first_outside));
 	(void)in_place_loops_before_modifications_elide(memory, data_first_outside);
 
 	(void)in_place_ptr_arith_redundancy_elide(memory, data_first_outside);
 
-	if (0 != check_infinite_loops(memory, data_first_outside))
+	if (0 != check_infinite_loops(memory, data_first_outside)) {
 		goto l_wrong_input;
+	}
 
-	if (0 != in_place_simplify_zeroing_loops(&any, memory, data_first_outside))
+	if (0 != in_place_simplify_zeroing_loops(&any, memory, data_first_outside)) {
 		goto l_failed_memory;
+	}
 
-	while (1 == in_place_round_trip_elide(memory, data_first_outside))
-		;
+	while (1 == in_place_round_trip_elide(memory, data_first_outside)) {
+	}
 
 	/* finish optimizations */
 
@@ -908,24 +971,30 @@ int main(void)
 
 	/* either fit the result or set ignored characters to ' ' */
 
-	if (EOF == fputs("/*\n", stdout))
+	if (EOF == fputs("/*\n", stdout)) {
 		goto l_failed_write;
+	}
 
 	flockfile(stdout);
-	if (data_first_outside - memory != (ptrdiff_t)fwrite_unlocked(memory, 1, data_first_outside - memory, stdout))
+	if (data_first_outside - memory !=
+	    (ptrdiff_t)fwrite_unlocked(memory, 1, data_first_outside - memory, stdout)) {
 		goto l_failed_fwrite;
+	}
 	funlockfile(stdout);
 
-	if (EOF == fputs("\n*/\n", stdout))
+	if (EOF == fputs("\n*/\n", stdout)) {
 		goto l_failed_write;
+	}
 
-	if (0 != bf2c_generate(memory, data_first_outside - memory))
+	if (0 != bf2c_generate(memory, data_first_outside - memory)) {
 		goto l_failed_write;
+	}
 
 	free(memory_handle);
 
-	if (EOF == fflush(stdout))
+	if (EOF == fflush(stdout)) {
 		goto l_failed_flush;
+	}
 
 	return EXIT_SUCCESS;
 
@@ -965,3 +1034,4 @@ l_failed_flush:
 	(void)fputs("\nFailed to flush\n", stderr);
 	return EXIT_FAILURE;
 }
+
